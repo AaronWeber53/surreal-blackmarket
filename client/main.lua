@@ -1,28 +1,27 @@
-QBCore = exports['qb-core']:GetCoreObject()
 currentDealer = nil
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    QBCore.Functions.TriggerCallback('qb-gundealer:server:RequestConfig', function(DealerConfig)
+    QBCore.Functions.TriggerCallback('surreal-blackmarket:server:RequestConfig', function(DealerConfig)
         Config.CurrentDealers = DealerConfig
     end)
 end)
 
-RegisterNetEvent('qb-gundealer:client:UpdateGunDealers', function(cfg)
+RegisterNetEvent('surreal-blackmarket:client:UpdateGunDealers', function(cfg)
     Config.CurrentDealers = cfg
 end)
 
-RegisterNetEvent('qb-gundealer:client:GotoGunDealer', function(DealerIndex)
+RegisterNetEvent('surreal-blackmarket:client:GotoGunDealer', function(DealerIndex)
     if Config.CurrentDealers[DealerIndex] ~= nil then
         local DealerData = Config.CurrentDealers[DealerIndex]
         local ped = PlayerPedId()
         SetEntityCoords(ped, DealerData.coords.x, DealerData.coords.y, DealerData.coords.z)
-        QBCore.Functions.Notify(Lang:t("success.teleported_to_dealer"), 'success')
+        NotifyPlayer(Lang:t("success.teleported_to_dealer"), 'success')
     else
-        TriggerEvent('QBCore:Notify', Lang:t("error.dealer_not_exists"), 'error')
+        NotifyPlayer(Lang:t("error.dealer_not_exists"), 'error')
     end
 end)
 
-RegisterNetEvent('qb-gundealer:client:setDealerItems', function(amount, dealer, itemCategory, itemIndex)
+RegisterNetEvent('surreal-blackmarket:client:setDealerItems', function(amount, dealer, itemCategory, itemIndex)
     if itemCategory then
         Config.CurrentDealers[dealer].randominventory[itemCategory][itemIndex].amount = Config.CurrentDealers[dealer].randominventory[itemCategory][itemIndex].amount - amount
     else
@@ -30,11 +29,11 @@ RegisterNetEvent('qb-gundealer:client:setDealerItems', function(amount, dealer, 
     end
 end)
 
-RegisterNetEvent('qb-gundealer:client:updateDealerItems', function(itemData, amount)
-    TriggerServerEvent('qb-gundealer:server:updateDealerItems', itemData, amount, currentDealer)
+RegisterNetEvent('surreal-blackmarket:client:updateDealerItems', function(itemData, amount)
+    TriggerServerEvent('surreal-blackmarket:server:updateDealerItems', itemData, amount, currentDealer)
 end)
 
-RegisterNetEvent('qb-gundealer:client:BuyItems', function()
+RegisterNetEvent('surreal-blackmarket:client:BuyItems', function()
     buyDealerStuff()
     exports['qb-menu']:closeMenu()
 end)
@@ -42,24 +41,15 @@ end)
 function buyDealerStuff()
     local PlayerData = QBCore.Functions.GetPlayerData()
     local dealerRep = PlayerData.metadata["dealerrep"] or 0.0
-    if PlayerData.gang.name ~= "none" then
-        QBCore.Functions.TriggerCallback('qb-gangmenu:server:GetDealerRep', function(cb)	
-            if cb > dealerRep then
-                dealerRep = cb
-            end
-            getDealerStuff(dealerRep, PlayerData.gang.name)
-        end, PlayerData.gang.name)
-    else
-        getDealerStuff(dealerRep, PlayerData.gang.name)
-    end
+    getDealerStuff(dealerRep, PlayerData.gang.name)
 end
 
 function getDealerStuff(dealerRep, gang) 
     local repItems = {}
-    repItems.label = "Blackmarket Weapon Dealer"
     repItems.items = {}
     repItems.slots = 30
     local CurrentDealer = Config.CurrentDealers[currentDealer]
+    repItems.label = "Blackmarket - "..CurrentDealer.name
     if (CurrentDealer) then
         -- Add constant weapons based on rep
         for k, v in pairs(CurrentDealer.inventory) do
@@ -71,7 +61,7 @@ function getDealerStuff(dealerRep, gang)
         -- Add randomized weapons based on rep
         for category, categorydata in pairs(CurrentDealer.randominventory) do
             local maxtoshow = 0
-            for showkey, showvalue in pairs(Config.GunCategories[category].numbertoshow) do
+            for showkey, showvalue in pairs(Config.ItemCategories[category].numbertoshow) do
                 if showvalue.minrep <= dealerRep and showvalue.quantity > maxtoshow then
                     maxtoshow = showvalue.quantity
                 end
@@ -102,13 +92,13 @@ function getDealerStuff(dealerRep, gang)
                 end
             end        
         end    
-        TriggerServerEvent("inventory:server:OpenInventory", "shop", "WeaponDealer_"..Config.CurrentDealers[currentDealer].name..tostring(currentDealer), repItems)    
+        TriggerServerEvent("inventory:server:OpenInventory", "shop", "BlackMarket_"..Config.CurrentDealers[currentDealer].name..tostring(currentDealer), repItems)    
         interacting = false
     end
 end
 
 
-RegisterNetEvent('qb-gundealer:client:SellItem', function(item)
+RegisterNetEvent('surreal-blackmarket:client:SellItem', function(item)
     local sellingItem = exports['qb-input']:ShowInput({
 		header = item.label,
 		submitText = "Sell "..item.label,
@@ -117,7 +107,7 @@ RegisterNetEvent('qb-gundealer:client:SellItem', function(item)
 				type = 'number',
 				isRequired = true,
 				name = 'amount',
-				text = 'Price Per: '..tostring(item.price)
+				text = 'Max Price Per: '..tostring(item.price)
 			}
 		}
 	})
@@ -128,11 +118,61 @@ RegisterNetEvent('qb-gundealer:client:SellItem', function(item)
 		end
         print(sellingItem.amount)
 		if sellingItem.amount and tonumber(sellingItem.amount) > 0 then
-			TriggerServerEvent('qb-gundealer:server:SellItem', item.itemName, item.label, tonumber(sellingItem.amount), tonumber(item.price))
+			TriggerServerEvent('surreal-blackmarket:server:SellItem', item.itemName, item.label, tonumber(sellingItem.amount), currentDealer)
 		else
-			QBCore.Functions.Notify("Trying to sell a negative amount?", 'error')
+			NotifyPlayer("Trying to sell a negative amount?", 'error')
 		end
         exports['qb-menu']:closeMenu()
 	end
     interacting = false
+end)
+
+local cooldownTimer = nil
+RegisterNetEvent('surreal-blackmarket:client:UserRadioScanner', function()
+    if cooldownTimer then
+        NotifyPlayer("Your scanner needs time to reset", "error")
+        return 
+    end
+    local nearbyMarket = nil
+    local ped = PlayerPedId()
+    local pos = GetEntityCoords(ped)
+    local closestDist = nil
+    for key, dealer in pairs(Config.CurrentDealers) do        
+        local dealerDist = #(pos - vector3(dealer.coords.x, dealer.coords.y, dealer.coords.z))
+        if dealerDist <= 1000 then
+            if not closestDist or closestDist > dealerDist then
+                closestDist = dealerDist
+                nearbyMarket = dealer
+            end
+        end
+    end
+
+    local triggerPoliceChance = false
+    if nearbyMarket then
+        if closestDist <= 300 then
+            NotifyPlayer("Your scanner picked up a strong signal by "..nearbyMarket.name.." close by.", "success")
+            triggerPoliceChance = true
+        elseif closestDist <= 600 then
+            NotifyPlayer("Your scanner picked up a signal by "..nearbyMarket.name..".", "success")
+            triggerPoliceChance = true
+        else
+            NotifyPlayer("Your scanner picked up a weak signal", "success")
+        end
+    else
+        NotifyPlayer("Your scanner did not pick up any signal")
+    end
+
+    NotifyPlayer("Your scanner is resetting")
+    cooldownTimer = true
+    SetTimeout((1000 * Config.ScannerResetTimer), function() -- Clear call after 10 minutes
+        NotifyPlayer("Your scanner has finished resetting", "success")
+        cooldownTimer = false
+    end) 
+
+    if triggerPoliceChance then
+        local random = math.random(100)
+        if random <= Config.ScannerPoliceNotifyChance then
+            NotifyPolice()
+        end        
+    end
 end)

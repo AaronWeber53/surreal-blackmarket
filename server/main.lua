@@ -1,23 +1,23 @@
 QBCore = exports['qb-core']:GetCoreObject()
 
-QBCore.Functions.CreateCallback('qb-gundealer:server:RequestConfig', function(source, cb)
+QBCore.Functions.CreateCallback('surreal-blackmarket:server:RequestConfig', function(source, cb)
     cb(Config.CurrentDealers)
 end)
 
-RegisterNetEvent('qb-gundealer:server:ResetGunDealers', function (source)
+RegisterNetEvent('surreal-blackmarket:server:ResetGunDealers', function (source)
     RandomizeDealers()
-    TriggerClientEvent('qb-gundealer:client:UpdateGunDealers', -1, Config.CurrentDealers)
+    TriggerClientEvent('surreal-blackmarket:client:UpdateGunDealers', -1, Config.CurrentDealers)
 end)
 
 CreateThread(function()
     Wait(500)    
-    TriggerEvent('qb-gundealer:server:ResetGunDealers')
+    TriggerEvent('surreal-blackmarket:server:ResetGunDealers')
 end)
 
 -- Logic to generate randomized dealers
 function RandomizeDealers()
     Config.CurrentDealers = {}
-    local dealerLength = #Config.GunDealerLocations
+    local dealerLength = #Config.DealerLocations
     local dealersUsed = {}
     local maxDealers = Config.MaxNumberOfDealersActive
     if (dealerLength < maxDealers) then
@@ -35,7 +35,7 @@ function RandomizeDealers()
                 end
             end
             if validDealer then
-                Config.CurrentDealers[#Config.CurrentDealers+1] = CreateDealer(Config.GunDealerLocations[randomDealerNumber])
+                Config.CurrentDealers[#Config.CurrentDealers+1] = CreateDealer(Config.DealerLocations[randomDealerNumber])
                 table.insert(dealersUsed, randomDealerNumber)
             end
         end
@@ -64,20 +64,20 @@ function CreateDealer(dealerinfo)
     local slotCount = 1
     print(dealerinfo.name)
     for i, category in pairs(dealerinfo.categories) do
-        for weapon, weapondata in pairs(Config.GunCategories[category].constantitems) do
+        for weapon, weapondata in pairs(Config.ItemCategories[category].constantitems) do
             newDealer.inventory[#newDealer.inventory+1] = CreateDealerItem(weapon, weapondata, slotCount)
             slotCount = slotCount + 1
             print(weapon)
         end
         local maxtoshow = 1
-        for showkey, showvalue in pairs(Config.GunCategories[category].numbertoshow) do
+        for showkey, showvalue in pairs(Config.ItemCategories[category].numbertoshow) do
             if showvalue.quantity > maxtoshow then
                 maxtoshow = showvalue.quantity
             end
         end
         local itemsUsed = {}
         newDealer.randominventory[category] = {}
-        local itemLength = #Config.GunCategories[category].randomitems
+        local itemLength = #Config.ItemCategories[category].randomitems
         if itemLength < maxtoshow then
             maxtoshow = itemLength
         end
@@ -93,7 +93,7 @@ function CreateDealer(dealerinfo)
                     end
                 end
                 if validItem then
-                    newDealer.randominventory[category][#newDealer.randominventory[category]+1] = CreateDealerItem(Config.GunCategories[category].randomitems[randomItemNumber].name, Config.GunCategories[category].randomitems[randomItemNumber], slotCount)
+                    newDealer.randominventory[category][#newDealer.randominventory[category]+1] = CreateDealerItem(Config.ItemCategories[category].randomitems[randomItemNumber].name, Config.ItemCategories[category].randomitems[randomItemNumber], slotCount)
                     slotCount = slotCount + 1
                     table.insert(itemsUsed, randomItemNumber)
                 end
@@ -118,9 +118,9 @@ function CreateDealerItem(weapon, weapondata, slotCount)
     }
 end
 
-QBCore.Commands.Add("resetgundealers", "Resets Gun Dealers", {}, 
+QBCore.Commands.Add("resetblackmarket", "Resets Black Markets", {}, 
 true, function(source, args)
-    TriggerEvent('qb-gundealer:server:ResetGunDealers')
+    TriggerEvent('surreal-blackmarket:server:ResetGunDealers')
 end, "admin")
 
 
@@ -132,17 +132,21 @@ false, function(source, args)
             TriggerClientEvent("chatMessage", source, dealer.name.." - "..dealer.location)            
         end
     end
-end, "user")
+end, "mod")
 
-QBCore.Commands.Add("gundealergoto", Lang:t("info.dealergoto_command_desc"), {{
+QBCore.Commands.Add("bmdealergoto", Lang:t("info.dealergoto_command_desc"), {{
     name = "index",
     help = "Index of Dealer to go to"
 }}, true, function(source, args)
     local DealerIndex = tonumber(args[1])
 
     if Config.CurrentDealers[DealerIndex] ~= nil then
-        TriggerClientEvent('qb-gundealer:client:GotoGunDealer', source, DealerIndex)
+        TriggerClientEvent('surreal-blackmarket:client:GotoGunDealer', source, DealerIndex)
     else
-        TriggerClientEvent('QBCore:Notify', source, Lang:t("error.dealer_not_exists"), 'error')
+        NotifyPlayer(source, Lang:t("error.dealer_not_exists"), 'error')
     end
 end, "admin")
+
+QBCore.Functions.CreateUseableItem("radioscanner", function(source)
+    TriggerClientEvent("surreal-blackmarket:client:UserRadioScanner", source)
+end)

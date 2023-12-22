@@ -1,6 +1,14 @@
 Config = Config or {}
 
 Config.CurrentDealers = {}
+
+Config.PriceDropThreshold = 10 -- How many items that when sold will drop the sell for price
+Config.ScannerPoliceNotifyChance = 40 -- Chance for the scanner to notify police of its use
+Config.ScannerResetTimer = 30 -- seconds it takes for scanner to reset
+
+--Number of dealers that can be active at a given time
+Config.MaxNumberOfDealersActive = 6
+
 -- this is what the data structure will look like when randomized
 --[[ Config.CurrentDealers[1] = {
     coords = vector(x,y,z),
@@ -37,68 +45,80 @@ Config.CurrentDealers = {}
 
 Config.SellPrices = {
     ['goldbar'] = {
-        minPrice = 500,
-        maxPrice = 1000
+        minPrice = 250,
+        maxPrice = 600
     },
     ['diamond'] = {
-        minPrice = 1000,
-        maxPrice = 2000
+        minPrice = 100,
+        maxPrice = 500
+    },
+    ['emerald'] = {
+        minPrice = 100,
+        maxPrice = 200
+    },
+    ['ruby'] = {
+        minPrice = 100,
+        maxPrice = 350
+    },
+    ['sapphire'] = {
+        minPrice = 100,
+        maxPrice = 500
     },
 }
 
-Config.GunCategories = {
+Config.ItemCategories = {
     ['pistol'] = {
         numbertoshow = {
-            { minrep = 100, quantity = 1},
-            { minrep = 200, quantity = 2},
-            { minrep = 300, quantity = 3},
+            { minrep = 100, quantity = 6},
+            { minrep = 200, quantity = 6},
+            { minrep = 300, quantity = 6},
         },
         randomitems = {
             [1] = {
                 name = 'weapon_combatpistol',
                 minrep = 50,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 3000,
                 pricehigh = 5000,
             },
             [2] = {
                 name = 'weapon_snspistol',
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 2000,
                 pricehigh = 5000,
             },
             [3] = {
                 name = 'weapon_heavypistol',
                 minrep = 125,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 4000,
                 pricehigh = 8000,
             },
             [4] = {
                 name = 'weapon_revolver',
                 minrep = 150,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 3500,
                 pricehigh = 6000,
             },
             [5] = {
                 name = 'weapon_doubleaction',
                 minrep = 175,     
-                quantitylow = 1,
-                quantityhigh = 3,
-                pricelow = 3500,
-                pricehigh = 7000,
+                quantitylow = 10,
+                quantityhigh = 30,
+                pricelow = 8000,
+                pricehigh = 10000,
             },
             [6] = {
                 name = 'weapon_ceramicpistol',
                 minrep = 300,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 10,
+                quantityhigh = 200,
                 pricelow = 8000,
                 pricehigh = 10000,
             },            
@@ -106,8 +126,8 @@ Config.GunCategories = {
         constantitems = {
             ['pistol_ammo'] = {
                 minrep = 15,     
-                quantitylow = 25,
-                quantityhigh = 50,
+                quantitylow = 250,
+                quantityhigh = 500,
                 pricelow = 200,
                 pricehigh = 300,
             }
@@ -122,33 +142,25 @@ Config.GunCategories = {
             [1] = {
                 name = 'weapon_microsmg',
                 minrep = 200,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 10,
+                quantityhigh = 20,
                 pricelow = 10000,
                 pricehigh = 14000,
             },
             [2] = {
                 name = 'weapon_smg',
                 minrep = 250,     
-                quantitylow = 1,
-                quantityhigh = 3,
+                quantitylow = 10,
+                quantityhigh = 30,
                 pricelow = 12500,
                 pricehigh = 15000,
-            },
-            [3] = {
-                name = 'weapon_combatpdw',
-                minrep = 300,     
-                quantitylow = 1,
-                quantityhigh = 3,
-                pricelow = 14000,
-                pricehigh = 18000,
             },
         },
         constantitems = {
             ['smg_ammo'] = {
                 minrep = 50,     
-                quantitylow = 1,
-                quantityhigh = 10,
+                quantitylow = 10,
+                quantityhigh = 100,
                 pricelow = 500,
                 pricehigh = 750,
             }
@@ -156,31 +168,31 @@ Config.GunCategories = {
     },
     ['shotgun'] = {
         numbertoshow = {
-            { minrep = 200, quantity = 1},
-            { minrep = 300, quantity = 2},
+            { minrep = 200, quantity = 3},
+            { minrep = 300, quantity = 3},
         },
         randomitems = {
             [1] = {
                 name = 'weapon_pumpshotgun',
                 minrep = 200,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 100,
+                quantityhigh = 200,
                 pricelow = 18000,
                 pricehigh = 24000,
             },
             [2] = {
                 name = 'weapon_sawnoffshotgun',
                 minrep = 250,     
-                quantitylow = 2,
-                quantityhigh = 4,
+                quantitylow = 20,
+                quantityhigh = 40,
                 pricelow = 18000,
                 pricehigh = 24000,
             },
             [3] = {
                 name = 'weapon_dbshotgun',
                 minrep = 275,     
-                quantitylow = 2,
-                quantityhigh = 3,
+                quantitylow = 20,
+                quantityhigh = 30,
                 pricelow = 18000,
                 pricehigh = 24000,
             },
@@ -188,8 +200,8 @@ Config.GunCategories = {
         constantitems = {
             ['shotgun_ammo'] = {
                 minrep = 50,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 100,
+                quantityhigh = 500,
                 pricelow = 500,
                 pricehigh = 750,
             }
@@ -197,22 +209,22 @@ Config.GunCategories = {
     },
     ['throwables'] = {
         numbertoshow = {
-            { minrep = 100, quantity = 1},
+            { minrep = 100, quantity = 2},
         },
         randomitems = {
             [1] = {
                 name = 'weapon_grenade',
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 8,
+                quantitylow = 10,
+                quantityhigh = 80,
                 pricelow = 8000,
                 pricehigh = 14000,
             },
             [2] = {
                 name = 'weapon_molotov',
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 8,
+                quantitylow = 10,
+                quantityhigh = 80,
                 pricelow = 8000,
                 pricehigh = 14000,
             },
@@ -221,31 +233,31 @@ Config.GunCategories = {
     },
     ['rifle'] = {
         numbertoshow = {
-            { minrep = 250, quantity = 1},
-            { minrep = 350, quantity = 2},
+            { minrep = 250, quantity = 3},
+            { minrep = 350, quantity = 3},
         },
         randomitems = {
             [1] = {
                 name = 'weapon_assaultrifle',
                 minrep = 250,     
-                quantitylow = 1,
-                quantityhigh = 4,
-                pricelow = 18000,
+                quantitylow = 100,
+                quantityhigh = 400,
+                pricelow = 20000,
                 pricehigh = 26000,
             },
             [2] = {
                 name = 'weapon_carbinerifle',
                 minrep = 300,     
-                quantitylow = 1,
-                quantityhigh = 3,
+                quantitylow = 100,
+                quantityhigh = 300,
                 pricelow = 20000,
                 pricehigh = 28000,
             },
             [3] = {
                 name = 'weapon_bullpuprifle',
                 minrep = 350,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 100,
+                quantityhigh = 200,
                 pricelow = 22000,
                 pricehigh = 30000,
             },
@@ -253,8 +265,8 @@ Config.GunCategories = {
         constantitems = {
             ['rifle_ammo'] = {
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 6,
+                quantitylow = 100,
+                quantityhigh = 600,
                 pricelow = 1000,
                 pricehigh = 1500,
             },
@@ -262,30 +274,30 @@ Config.GunCategories = {
     },
     ['sniper'] = {
         numbertoshow = {
-            { minrep = 400, quantity = 1},
+            { minrep = 400, quantity = 3},
         },
         randomitems = {
             [1] = {
                 name = 'weapon_sniperrifle',
                 minrep = 400,     
-                quantitylow = 1,
-                quantityhigh = 2,
-                pricelow = 40000,
-                pricehigh = 45000,
+                quantitylow = 100,
+                quantityhigh = 200,
+                pricelow = 50000,
+                pricehigh = 55000,
             },
             [2] = {
                 name = 'weapon_heavysniper',
                 minrep = 450,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 100,
+                quantityhigh = 200,
                 pricelow = 50000,
                 pricehigh = 60000,
             },
             [3] = {
                 name = 'weapon_marksmanrifle',
                 minrep = 480,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 100,
+                quantityhigh = 200,
                 pricelow = 55000,
                 pricehigh = 70000,
             },
@@ -293,48 +305,48 @@ Config.GunCategories = {
         constantitems = {
             ['snp_ammo'] = {
                 minrep = 150,     
-                quantitylow = 1,
-                quantityhigh = 5,
-                pricelow = 3000,
-                pricehigh = 5500,
+                quantitylow = 100,
+                quantityhigh = 500,
+                pricelow = 5000,
+                pricehigh = 6000,
             },
         }
     },
     ['heavy'] = {
         numbertoshow = {
-            { minrep = 425, quantity = 1},
-            { minrep = 525, quantity = 2},
+            { minrep = 425, quantity = 4},
+            { minrep = 525, quantity = 4},
         },
         randomitems = {
             [1] = {
                 name = 'weapon_mg',
                 minrep = 425,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 100,
+                quantityhigh = 200,
                 pricelow = 40000,
                 pricehigh = 55000,
             },
             [2] = {
                 name = 'weapon_rpg',
                 minrep = 500,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 10,
+                quantityhigh = 20,
                 pricelow = 60000,
                 pricehigh = 80000,
             },
             [3] = {
                 name = 'rpg_ammo',
                 minrep = 500,     
-                quantitylow = 1,
-                quantityhigh = 3,
+                quantitylow = 100,
+                quantityhigh = 300,
                 pricelow = 8000,
                 pricehigh = 10000,
             },
             [4] = {
                 name = 'weapon_combatmg',
                 minrep = 525,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 10,
+                quantityhigh = 20,
                 pricelow = 50000,
                 pricehigh = 65500,
             },
@@ -342,8 +354,8 @@ Config.GunCategories = {
         constantitems = {
             ['mg_ammo'] = {
                 minrep = 200,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 100,
+                quantityhigh = 500,
                 pricelow = 6000,
                 pricehigh = 8000,
             }
@@ -351,31 +363,31 @@ Config.GunCategories = {
     },
     ['car'] = {
         numbertoshow = {
-            { minrep = 100, quantity = 1},
-            { minrep = 200, quantity = 2},
+            { minrep = 100, quantity = 3},
+            { minrep = 200, quantity = 3},
         },
         randomitems = {
             [1] = {
                 name = 'nitrous',
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 10000,
                 pricehigh = 15000,
             },
             [2] = {
                 name = 'harness',
                 minrep = 175,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 10,
+                quantityhigh = 20,
                 pricelow = 20000,
                 pricehigh = 40000,
             },
             [3] = {
                 name = 'cleaningkit',
                 minrep = 100,     
-                quantitylow = 5,
-                quantityhigh = 10,
+                quantitylow = 50,
+                quantityhigh = 100,
                 pricelow = 300,
                 pricehigh = 600,
             },
@@ -384,46 +396,54 @@ Config.GunCategories = {
     },
     ['security'] = {
         numbertoshow = {
-            { minrep = 100, quantity = 1},
-            { minrep = 250, quantity = 2},
+            { minrep = 100, quantity = 6},
+            { minrep = 250, quantity = 6},
         },
         randomitems = {
             [1] = {
                 name = 'gatecrack',
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 100,
+                quantityhigh = 200,
                 pricelow = 15000,
                 pricehigh = 40000,
             },
             [2] = {
+                name = 'lockpick',
+                minrep = 25,     
+                quantitylow = 10,
+                quantityhigh = 20,
+                pricelow = 100,
+                pricehigh = 1000,
+            },
+            [3] = {
                 name = 'thermite',
                 minrep = 100,     
-                quantitylow = 1,
-                quantityhigh = 2,
+                quantitylow = 10,
+                quantityhigh = 20,
                 pricelow = 15000,
                 pricehigh = 40000,
             },
-            [3] = {
+            [4] = {
                 name = 'security_card_01',
                 minrep = 350,     
-                quantitylow = 1,
-                quantityhigh = 1,
+                quantitylow = 10,
+                quantityhigh = 10,
                 pricelow = 90000,
                 pricehigh = 150000,
             },
-            [4] = {
+            [5] = {
                 name = 'security_card_02',
                 minrep = 500,     
-                quantitylow = 1,
-                quantityhigh = 1,
+                quantitylow = 10,
+                quantityhigh = 10,
                 pricelow = 120000,
                 pricehigh = 240000,
             },
-            [5] = {
+            [6] = {
                 name = 'twerks_candy',
                 minrep = 1,     
-                quantitylow = 1,
+                quantitylow = 100,
                 quantityhigh = 100,
                 pricelow = 10,
                 pricehigh = 1000,
@@ -440,52 +460,53 @@ Config.GunCategories = {
         constantitems = { 
             ['methkey'] = {
                 minrep = 250,     
-                quantitylow = 0,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 8000,
                 pricehigh = 10000,
-                gangs = {
-                    ['diablos'] = true
-                }
+                -- gangs = {
+                --     ['diablos'] = true
+                -- }
             },
             ['cocainekey'] = {
                 minrep = 250,     
-                quantitylow = 0,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 8000,
                 pricehigh = 10000,
-                gangs = {
-                    ['apegang'] = true,
-                    ['families'] = true
-                }
+                -- gangs = {
+                --     ['apegang'] = true,
+                --     ['families'] = true
+                -- }
             },
             ['weedkey'] = {
                 minrep = 250,     
-                quantitylow = 0,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 8000,
                 pricehigh = 10000,
-                gangs = {
-                    ['apegang'] = true,
-                    ['families'] = true
-                }
+                -- gangs = {
+                --     ['apegang'] = true,
+                --     ['families'] = true
+                -- }
             },
             ['labkey'] = {
                 minrep = 10,     
-                quantitylow = 1,
-                quantityhigh = 5,
+                quantitylow = 10,
+                quantityhigh = 50,
                 pricelow = 8000,
                 pricehigh = 10000,
-                gangs = {
-                    ['ballas'] = true,
-                    ['diablos'] = true
-                }
+                -- gangs = {
+                --     ['ballas'] = true,
+                --     ['diablos'] = true
+                -- }
             },
         }
     }
+
 }
-Config.MaxNumberOfDealersActive = 3
-Config.GunDealerLocations = {
+--Randomized locations for dealers
+Config.DealerLocations = {
     [1] = {
         name = "Tony Small Arms Dealer", -- small arms dealer
 	    locations = {
@@ -503,7 +524,7 @@ Config.GunDealerLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 14,
         },
     },
     [2] = {
@@ -521,7 +542,7 @@ Config.GunDealerLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 14,
         },
     },
     [3] = {
@@ -541,7 +562,7 @@ Config.GunDealerLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 14,
         },
     },
     [4] = {
@@ -559,7 +580,7 @@ Config.GunDealerLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 14,
         },
     },
     [5] = {
@@ -575,7 +596,7 @@ Config.GunDealerLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 14,
         },
     },
     [6] = {
@@ -593,11 +614,12 @@ Config.GunDealerLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 15,
         },
     },
 }
 
+-- Locations that will be always active regardless of randomization
 Config.ConstantLocations = {
     [1] = {
         name = "Key Market",
@@ -610,7 +632,7 @@ Config.ConstantLocations = {
         },
         time = {
             min = 16,
-            max = 4,
+            max = 14,
         },
     }
 }

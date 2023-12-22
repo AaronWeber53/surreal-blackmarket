@@ -63,17 +63,7 @@ function OpenDealerMenu()
     interacting = true
     local PlayerData = QBCore.Functions.GetPlayerData()
     local dealerRep = PlayerData.metadata["dealerrep"] or 0.0
-    if PlayerData.gang.name ~= "none" then
-        QBCore.Functions.TriggerCallback('qb-gangmenu:server:GetDealerRep', function(cb)	
-            if cb > dealerRep then
-                dealerRep = cb
-            end
-            OpenMenu(dealerRep)
-        end, PlayerData.gang.name)
-    else
-        OpenMenu(dealerRep)
-    end
-
+    OpenMenu(dealerRep)
 end
 
 function OpenMenu(dealerRep)
@@ -90,21 +80,21 @@ function OpenMenu(dealerRep)
             header = 'Buy Items',
             txt = 'Buy Items from Dealer',
             params = {
-                event = 'qb-gundealer:client:BuyItems',
+                event = 'surreal-blackmarket:client:BuyItems',
             }
         },
         {
             header = "Sell Items",
             txt = 'Sell Items to Dealer',
             params = {
-                event = 'qb-gundealer:client:SellItems',                
+                event = 'surreal-blackmarket:client:SellItems',                
             }
         },
         {
             header = "Close Menu",
             txt = "",
             params = {
-                event = "qb-gundealer:client:closeMenu"
+                event = "surreal-blackmarket:client:closeMenu"
             }
     
         }
@@ -112,42 +102,17 @@ function OpenMenu(dealerRep)
     exports['qb-menu']:openMenu(menu)
 end
 
-RegisterNetEvent('qb-gundealer:client:closeMenu', function()
+RegisterNetEvent('surreal-blackmarket:client:closeMenu', function()
     interacting = false
     exports['qb-menu']:closeMenu()
 end)
 
-RegisterNetEvent('qb-gundealer:client:homeMenu', function()
+RegisterNetEvent('surreal-blackmarket:client:homeMenu', function()
     OpenDealerMenu()
 end)
 
-RegisterNetEvent('qb-gundealer:client:SellItems', function()
-    local sellItemsMenu = {
-        {
-            header = '⬅ Go Back',
-            params = {
-                event = 'qb-gundealer:client:homeMenu'
-            }
-        }
-    }
-    local CurrentDealer = Config.CurrentDealers[currentDealer]
-    for k,v in pairs(CurrentDealer.sellPrices) do
-        local itemName = QBCore.Shared.Items[k].label
-        sellItemsMenu[#sellItemsMenu + 1] = {
-            header = itemName,
-            txt = 'Current Price: '..tostring(v),
-            params = {
-                event = 'qb-gundealer:client:SellItem',
-                args = {
-                    label = itemName,
-                    itemName = k,
-                    price = v
-                }
-            }
-        }
-    end
-
-    exports['qb-menu']:openMenu(sellItemsMenu)
+RegisterNetEvent('surreal-blackmarket:client:SellItems', function()
+    BuildSellItems()
 end)
 
 
@@ -209,7 +174,7 @@ function knockDoorAnim(home)
         Wait(3500)
         TaskPlayAnim(PlayerPed, knockAnimLib, "exit", 3.0, 3.0, -1, 1, 0, false, false, false)
         Wait(1000)
-        QBCore.Functions.Notify(Lang:t("info.no_one_home"), 'primary', 3500)
+        NotifyPlayer(Lang:t("info.no_one_home"), 'primary', 3500)
     end
 end
 
