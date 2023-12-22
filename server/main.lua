@@ -64,10 +64,15 @@ function CreateDealer(dealerinfo)
     local slotCount = 1
     print(dealerinfo.name)
     for i, category in pairs(dealerinfo.categories) do
-        for weapon, weapondata in pairs(Config.ItemCategories[category].constantitems) do
-            newDealer.inventory[#newDealer.inventory+1] = CreateDealerItem(weapon, weapondata, slotCount)
-            slotCount = slotCount + 1
-            print(weapon)
+        if not category or not Config.ItemCategories[category] then
+            goto continue
+        end
+        if Config.ItemCategories[category].constantitems then
+            for weapon, weapondata in pairs(Config.ItemCategories[category].constantitems) do
+                newDealer.inventory[#newDealer.inventory+1] = CreateDealerItem(weapon, weapondata, slotCount)
+                slotCount = slotCount + 1
+                print(weapon)
+            end            
         end
         local maxtoshow = 1
         for showkey, showvalue in pairs(Config.ItemCategories[category].numbertoshow) do
@@ -100,6 +105,7 @@ function CreateDealer(dealerinfo)
             end
         end
     
+        ::continue::
     end
 
     return newDealer
