@@ -1,4 +1,4 @@
-Add following code to qb-inventory on line 2091 right before the itemshop check
+Add following code to qb-inventory server main.luaon line 2091 right before the itemshop check
 
 		elseif QBCore.Shared.SplitStr(shopType, "_")[1] == "BlackMarket" then
 			TriggerEvent("surreal-blackmarket:server:buyItem", src, itemData, fromAmount, toSlot)
