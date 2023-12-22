@@ -11,3 +11,8 @@ Add following code to qb-inventory
 /currentmarket - View the current market locations
 
 /bmdealergoto - Teleport to the dealers location
+
+
+## Check out my Tebex ##
+Check out my tebex for my missions script to allow you to create robust missions with ease
+https://surreal-scripts.tebex.io/
